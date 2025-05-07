@@ -1,7 +1,9 @@
 @file:Suppress("DuplicatedCode")
 
 import naksha.base.Platform
+import naksha.base.Platform.PlatformCompanion.gzipInflate
 import naksha.geo.HereTile
+import naksha.jbon.JbFeatureDecoder
 import naksha.model.*
 import naksha.model.objects.NakshaCollection
 import naksha.model.objects.NakshaFeature
@@ -146,6 +148,20 @@ fun process_features_in_parallel(response: SuccessResponse): ConcurrentHashMap<S
                 val id = requireNotNull(featureTuple.id)
                 if (id.endsWith("0000")) {
                     result[id] = requireNotNull(featureTuple.feature)
+                } else {
+                    val tuple = requireNotNull(featureTuple.tuple)
+                    var bytes = requireNotNull(tuple.feature)
+                    if (tuple.meta.flags.featureGzip()) {
+                        bytes = gzipInflate(bytes)
+                    }
+                    val decoder = JbFeatureDecoder()
+                    decoder.mapBytes(bytes)
+                    if (decoder.selectPath("properties", "age") && decoder.reader.isInt()) {
+                        val age = decoder.reader.decodeInt32()
+                        if (age == 0) {
+                            result[id] = requireNotNull(featureTuple.feature)
+                        }
+                    }
                 }
             }
         }
@@ -189,21 +205,25 @@ fun performance_demo(storage: IStorage) {
     print_result(result)
 
     // Insert a new feature
-    val feature = RandomFeatures.randomFeature()
-    feature.id += "0000"
+    val feature = RandomFeatures.randomFeature("o9E6kdUbRLYo")
     val properties = feature.properties.proxy(FooBuilder::class)
     properties.name = "Eliot"
-    println("Insert a new feature '${feature.id}'")
+    properties.age = 0
+    val tagMap = feature.properties.xyz.tags.toTagMap()
+    tagMap.remove("age")
+    feature.properties.xyz.tags = tagMap.toTagList()
+    feature.properties.xyz.tags.addTag("age:=0", false)
+    println("Upsert feature '${feature.id}'")
     storage.newWriteSession().use { session ->
         val request = WriteRequest()
-        request.add(Write().createFeature(MAP_ID, COLLECTION_ID, feature))
+        request.add(Write().upsertFeature(MAP_ID, COLLECTION_ID, feature))
         val response = session.execute(request)
         check(response is SuccessResponse) {
             println(response)
         }
         session.commit()
     }
-    println("Inserted another feature, lets read features again, we expect that it is now in the result")
+    println("Upserted another feature, lets read features again, we expect that it is now in the result")
     startNanos = Platform.currentNanos()
     val new_response = read_all_features(storage, MAP_ID, COLLECTION_ID)
     printMeasure("Read ${new_response.length} features", new_response.length, startNanos)
