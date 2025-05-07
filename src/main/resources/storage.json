@@ -1,0 +1,24 @@
+{
+  "id": "demo_storage",
+  "className": "naksha.psql.PsqlStorage",
+  "master": {
+    "host": "localhost",
+    "port": 5432,
+    "db": "postgres",
+    "user": "postgres",
+    "password": "demopass",
+    "readOnly": false,
+    "connectionLimit": 1000
+  },
+  "replicas": [{
+    "host": "localhost",
+    "port": 5432,
+    "db": "postgres",
+    "user": "postgres",
+    "password": "demopass",
+    "readOnly": true,
+    "connectionLimit": 1000
+  }],
+  "create": true,
+  "upgrade": true
+}
