@@ -79,7 +79,7 @@ fun main(vararg args: String) {
     val random_features = Array(10) { RandomFeatures.randomFeature(tagPossibility = 1.0) }
     val features = demo.writeFeatures(RANDOM_DATA_COLLECTION_ID, *random_features)
     for (feature in features) {
-        demo.printFeature(feature)
+        demo.printFeatureId(feature)
     }
 }
 

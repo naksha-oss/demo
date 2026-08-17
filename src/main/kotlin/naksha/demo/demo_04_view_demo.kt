@@ -17,6 +17,7 @@ fun main(vararg args: String) {
     // random-data: version 1
     // new branch -> delta
 
+    // STANDARD VIEW
     val demo = DemoSetup()
     demo.createCollections(NakshaCollection("delta_layer"))
     val storage = demo.storage
@@ -24,7 +25,14 @@ fun main(vararg args: String) {
     val delta = ViewLayer(storage, demo.catalog.id, "delta_layer")
     val view = View(ViewLayerCollection("my_view", delta, base))
     view.newReadSession().use { session ->
-        
+        // Unmodified
     }
 
+    // ADDITIONALLY: Is view with fixed base, so base fixed to a specific version!
+    // Create a new branch based upon a specific version of RANDOM_DATA_COLLECTION_ID
+    // Use the current version
+
+    // Modify delta
+    // Modify base
+    // Show that the "branch" aka view is not impacted by modifications of base
 }
