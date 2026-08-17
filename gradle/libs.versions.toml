@@ -1,5 +1,5 @@
 [versions]
-naksha = "3.0.0-beta.24"
+naksha = "3.0.0-beta.48"
 kotlin = "2.4.10"
 
 [libraries]

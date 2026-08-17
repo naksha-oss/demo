@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     java
     application
@@ -5,18 +7,18 @@ plugins {
 }
 
 repositories {
-    //mavenLocal()
+    mavenLocal()
     mavenCentral()
 }
 
 kotlin {
     jvmToolchain {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_23)
+            jvmTarget.set(JvmTarget.JVM_25)
         }
     }
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_23)
+        jvmTarget.set(JvmTarget.JVM_25)
     }
     sourceSets {
         main {
