@@ -9,6 +9,15 @@
 SET SESSION search_path TO demo_map, "naksha~admin", topology, hint_plan, public;
 SET enable_seqscan TO off;
 
+
+select * from random_data;
+
+
+
+
+
+
+
 select * from wikvaya_log where type = 'STREAM' limit 100;
 
 

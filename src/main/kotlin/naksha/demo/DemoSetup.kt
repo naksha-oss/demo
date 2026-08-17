@@ -1,9 +1,13 @@
 package naksha.demo
 
+import naksha.base.Platform
+import naksha.base.PlatformMap
 import naksha.model.IStorage
 import naksha.model.Naksha
 import naksha.model.NakshaContext
+import naksha.model.RandomFeatures
 import naksha.model.objects.NakshaCatalog
+import naksha.model.objects.NakshaFeature
 import naksha.model.objects.NakshaStorage
 import naksha.model.request.ErrorResponse
 import naksha.model.request.Response
@@ -61,3 +65,11 @@ fun loadTextResource(filename: String): String {
     requireNotNull(txt)
     return txt
 }
+
+fun loadFeatureFromResource(filename: String): NakshaFeature {
+    val json = loadTextResource(filename)
+    val raw = Platform.fromJSON(json) as PlatformMap
+    val feature = raw.proxy(NakshaFeature::class)
+    return feature
+}
+
