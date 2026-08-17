@@ -50,7 +50,7 @@ To run this demo, first create and start a specific PostgresQL docker container.
 Naksha maintains a special PostgresQL database image, that is compatible with what AWS Aurora offers in regard to Naksha `lib-psql` demands. To start such a pseudo Aurora, just use the following command:
 
 ```bash
-  export IMG=ghcr.io/naksha-oss/naksha-postgres:v16.2-r4
+export IMG=ghcr.io/naksha-oss/naksha-postgres:v16.2-r5
 mkdir -p ~/demo
 mkdir -p ~/demo/pg_data
 mkdir -p ~/demo/pg_temp
@@ -58,7 +58,7 @@ docker pull $IMG
 docker run --name demo_pg \
        -v ~/demo/pg_data:/usr/local/pgsql/data \
        -v ~/demo/pg_temp:/usr/local/pgsql/temp \
-       -p 0.0.0.0:5432:5432 \
+       -p 0.0.0.0:9432:5432 \
        -e PGPASSWORD=demopass \
        -d $IMG
 ```
@@ -67,11 +67,11 @@ This command creates a directory `demo` in you home directory _(`~/demo`)_ in wh
 
 The database should now be available as:
 - host: `localhost`
-- port: `5432`
+- port: `9432`
 - database: `postgres`
 - user: `postgres`
 - password: `demopass`
-- JDBC: `jdbc:postgresql://localhost:5432/postgres?user=postgres&password=demopass`
+- JDBC: `jdbc:postgresql://localhost:9432/postgres?user=postgres&password=demopass`
 
 ### Show running container
 ```bash
