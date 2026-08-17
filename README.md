@@ -172,7 +172,7 @@ dependencies {
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <properties>
       <naksha.group>io.github.naksha-oss</naksha.group>
-      <naksha.version>3.0.0-beta.24</naksha.version>
+      <naksha.version>3.0.0-beta.48</naksha.version>
   </properties>
   <dependencies>
     <!-- Naksha-API -->
@@ -214,3 +214,22 @@ dependencies {
   </dependencies>
 </project>
 ```
+
+## Second Part Naksha Review
+- Simple insertion
+- Simple queries
+- Branching via View
+- Two Phase Query
+- Concept of Tuple / TupleNumber
+- History queries
+- JBON
+  - How to decode with small effort
+  - Compression
+- Goal of 3.0 - Final Data Layout
+- Goal of 3.1 - Final API Design _(improve usability)_
+- Goal of 3.2+ - Performance Improvements Optimization, Additional Features
+- Kotlin
+  - The good and the bad _(until 2.4)_
+  - With 2.4, Kotlin has become really good!
+  - Why using Kotlin
+
