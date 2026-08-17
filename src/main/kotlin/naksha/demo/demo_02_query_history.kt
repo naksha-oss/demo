@@ -2,12 +2,15 @@ package naksha.demo
 
 import naksha.base.Int64
 import naksha.base.Version
+import naksha.geo.SpPoint
 import naksha.model.RandomFeatures
 import naksha.model.objects.NakshaFeature
+import naksha.model.objects.StandardMembers
 import naksha.model.request.ReadFeatures
 import naksha.model.request.SuccessResponse
 import naksha.model.request.Write
 import naksha.model.request.WriteRequest
+import naksha.model.request.ops.IsAnyOf
 
 // TODO: Modify `random_data`
     //       Step 1: Remember current version (find out what HEAD is - my idea: start a write session, get tx and rollback)
@@ -22,7 +25,7 @@ import naksha.model.request.WriteRequest
     //       Step 7: Request before update (after add)
     //       Step 8: Request before deletion (after update)
 
-    fun main(vararg args: String) {
+    fun main() {
         val demo = DemoSetup()
         //step 1
         val headVersion : Version
@@ -32,12 +35,19 @@ import naksha.model.request.WriteRequest
         println("Current head version: $headVersion, corresponding to day, month, year, seq number: ${headVersion.day}, ${headVersion.month}, ${headVersion.year}, ${headVersion.seq}")
         //step 2
         val random_features = Array(5) { RandomFeatures.randomFeature(tagPossibility = 1.0) }
+        //geometry for bbox demo
+        val point = SpPoint(1.0, 1.0)
+        for (feature in random_features) {
+            feature.withGeometry(point)
+        }
         val successResponse = demo.writeFeaturesReturnSuccess(RANDOM_DATA_COLLECTION_ID, *random_features)
         val headVersionAfterInsert = successResponse.featureTupleList[0]?.tupleNumber?.version
         //step 3
         val update_features = random_features.copyOfRange(0, 3)
+        val newPoint = SpPoint(2.0, 2.0)
         for (feature in update_features) {
             feature.properties["demoUpdate"] = "to mark update"
+            feature.withGeometry(newPoint)
         }
         val successResponseUpdate = demo.updateFeaturesReturnSuccess(RANDOM_DATA_COLLECTION_ID, *update_features)
         val headVersionAfterUpdate = successResponseUpdate.featureTupleList[0]?.tupleNumber?.version
@@ -46,14 +56,14 @@ import naksha.model.request.WriteRequest
         val tombstoneVersion = successResponseAfterDelete.featureTupleList[0]?.tupleNumber?.version
         //step 5??
         //step 6
-        val readResponseOriginal = demo.readFeatures(RANDOM_DATA_COLLECTION_ID,headVersion.number,random_features[0].id,random_features[1].id)
+        val readResponseOriginal = demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID,headVersion.number,random_features[0].id,random_features[1].id)
         print("Reading features for version before insert, found number of features: ${readResponseOriginal.features.size}")
         //step 7
-        val readResponseAfterInsert = demo.readFeatures(RANDOM_DATA_COLLECTION_ID,headVersionAfterInsert,random_features[0].id,random_features[1].id)
-        print("Reading first 2 features after insert: ${readResponseAfterInsert.features}")
+        val readResponseAfterInsert = demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID,headVersionAfterInsert,random_features[0].id,random_features[1].id)
+        print("Reading first 2 features after insert, even though 1st one is deleted in HEAD: ${readResponseAfterInsert.features}")
         //step 8
-        val readResponseAfterUpdate = demo.readFeatures(RANDOM_DATA_COLLECTION_ID,headVersionAfterUpdate,random_features[0].id,random_features[1].id, random_features[2].id)
-        print("Reading the 3 updated features: ${readResponseAfterUpdate.features}")
+        val readResponseAfterUpdate = demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID,headVersionAfterUpdate,random_features[0].id,random_features[1].id, random_features[2].id)
+        print("Reading the 3 updated features, including the 1st one that is deleted in HEAD: ${readResponseAfterUpdate.features}")
     }
 
 
@@ -102,12 +112,14 @@ fun DemoSetup.deleteFeaturesReturnSuccess(collectionId: String, vararg features:
     }
 }
 
-fun DemoSetup.readFeatures(collectionId: String, version: Int64? = null, vararg ids: String): SuccessResponse {
+fun DemoSetup.readFeaturesByIds(collectionId: String, version: Int64? = null, vararg ids: String): SuccessResponse {
     storage.newReadSession().use { session ->
         val collection = requireNotNull(session.getCollectionById(catalog, collectionId))
         val request = ReadFeatures()
         request.withCatalogId(collection.catalogId).withCollectionId(collection.id)
         request.version = version
+        request.queryHistory = true
+        request.queryMembers = IsAnyOf(StandardMembers.Id,*ids)
         return successResponse(session.execute(request))
     }
 }
