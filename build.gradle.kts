@@ -9,6 +9,7 @@ plugins {
 repositories {
     mavenLocal()
     mavenCentral()
+    maven("https://repo.osgeo.org/repository/release/")
 }
 
 kotlin {

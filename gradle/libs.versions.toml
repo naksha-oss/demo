@@ -10,6 +10,7 @@ naksha_lib_diff             = { module = "io.github.naksha-oss:here-naksha-lib-d
 naksha_lib_geo              = { module = "io.github.naksha-oss:here-naksha-lib-geo", version.ref = "naksha" }
 naksha_lib_jbon             = { module = "io.github.naksha-oss:here-naksha-lib-jbon", version.ref = "naksha" }
 naksha_lib_model            = { module = "io.github.naksha-oss:here-naksha-lib-model", version.ref = "naksha" }
+naksha_lib_view             = { module = "io.github.naksha-oss:here-naksha-lib-view", version.ref = "naksha" }
 
 # Implementation of lib-model:
 naksha_lib_psql = { module = "io.github.naksha-oss:here-naksha-lib-psql", version.ref = "naksha" }
@@ -25,6 +26,7 @@ naksha_libs = [
     "naksha_lib_geo",
     "naksha_lib_jbon",
     "naksha_lib_model",
+    "naksha_lib_view",
 ]
 naksha_impl = [
     "naksha_lib_psql"
