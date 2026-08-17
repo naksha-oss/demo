@@ -12,11 +12,7 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_25)
-        }
-    }
+    jvmToolchain(25)
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_25)
     }
