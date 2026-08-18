@@ -18,7 +18,7 @@ fun main(vararg args: String) {
     // new branch -> delta
 
     // STANDARD VIEW
-    val demo = DemoSetup()
+    val demo = DemoCore()
     demo.createCollections(NakshaCollection("delta_layer"))
     val storage = demo.storage
     val base = ViewLayer(storage, demo.catalog.id, RANDOM_DATA_COLLECTION_ID)

@@ -10,9 +10,29 @@ SET SESSION search_path TO demo_map, "naksha~admin", topology, hint_plan, public
 SET enable_seqscan TO off;
 
 
-select id, fn from random_data
+
+
+-- demo_01
+select id, fn, naksha_feature(feature) as feature, feature as binary from random_data
+
+
+
+
+-- demo_02
 union all
 select id, fn from delta_layer;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

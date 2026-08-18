@@ -1,9 +1,9 @@
 package naksha.demo
 
+import naksha.base.Guid
 import naksha.base.Int64
 import naksha.base.Version
 import naksha.geo.SpPoint
-import naksha.model.RandomFeatures
 import naksha.model.objects.NakshaFeature
 import naksha.model.objects.StandardMembers
 import naksha.model.request.ReadFeatures
@@ -25,49 +25,8 @@ import naksha.model.request.ops.IsAnyOf
     //       Step 7: Request before update (after add)
     //       Step 8: Request before deletion (after update)
 
-    fun main() {
-        val demo = DemoSetup()
-        //step 1
-        val headVersion : Version
-        demo.storage.newWriteSession().use { session ->
-            headVersion = session.useTransaction().version
-        }
-        println("Current head version: $headVersion, corresponding to day, month, year, seq number: ${headVersion.day}, ${headVersion.month}, ${headVersion.year}, ${headVersion.seq}")
-        //step 2
-        val random_features = Array(5) { RandomFeatures.randomFeature(tagPossibility = 1.0) }
-        //geometry for bbox demo
-        val point = SpPoint(1.0, 1.0)
-        for (feature in random_features) {
-            feature.withGeometry(point)
-        }
-        val successResponse = demo.writeFeaturesReturnSuccess(RANDOM_DATA_COLLECTION_ID, *random_features)
-        val headVersionAfterInsert = successResponse.featureTupleList[0]?.tupleNumber?.version
-        //step 3
-        val update_features = random_features.copyOfRange(0, 3)
-        val newPoint = SpPoint(2.0, 2.0)
-        for (feature in update_features) {
-            feature.properties["demoUpdate"] = "to mark update"
-            feature.withGeometry(newPoint)
-        }
-        val successResponseUpdate = demo.updateFeaturesReturnSuccess(RANDOM_DATA_COLLECTION_ID, *update_features)
-        val headVersionAfterUpdate = successResponseUpdate.featureTupleList[0]?.tupleNumber?.version
-        //step 4
-        val successResponseAfterDelete = demo.deleteFeaturesReturnSuccess(RANDOM_DATA_COLLECTION_ID, update_features[0])
-        val tombstoneVersion = successResponseAfterDelete.featureTupleList[0]?.tupleNumber?.version
-        //step 5??
-        //step 6
-        val readResponseOriginal = demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID,headVersion.number,random_features[0].id,random_features[1].id)
-        print("Reading features for version before insert, found number of features: ${readResponseOriginal.features.size}")
-        //step 7
-        val readResponseAfterInsert = demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID,headVersionAfterInsert,random_features[0].id,random_features[1].id)
-        print("Reading first 2 features after insert, even though 1st one is deleted in HEAD: ${readResponseAfterInsert.features}")
-        //step 8
-        val readResponseAfterUpdate = demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID,headVersionAfterUpdate,random_features[0].id,random_features[1].id, random_features[2].id)
-        print("Reading the 3 updated features, including the 1st one that is deleted in HEAD: ${readResponseAfterUpdate.features}")
-    }
 
-
-fun DemoSetup.writeFeaturesReturnSuccess(collectionId: String, vararg features: NakshaFeature): SuccessResponse {
+fun DemoCore.writeFeaturesReturnSuccess(collectionId: String, vararg features: NakshaFeature): SuccessResponse {
     storage.newWriteSession().use { session ->
         val collection = requireNotNull( session.getCollectionById(catalog, collectionId) )
         val request = WriteRequest()
@@ -82,22 +41,22 @@ fun DemoSetup.writeFeaturesReturnSuccess(collectionId: String, vararg features: 
     }
 }
 
-fun DemoSetup.updateFeaturesReturnSuccess(collectionId: String, vararg features: NakshaFeature): SuccessResponse {
+fun DemoCore.updateFeatures(collectionId: String, vararg features: DemoFeature): Array<DemoFeature> {
     storage.newWriteSession().use { session ->
         val collection = requireNotNull(session.getCollectionById(catalog, collectionId))
         val request = WriteRequest()
         for (feature in features) {
             request.add(
-                Write().updateFeature(collection, feature, true)
+                Write().updateFeature(collection, feature.proxy(NakshaFeature::class), true)
             )
         }
         val response = successResponse(session.execute(request))
         session.commit()
-        return response
+        return featureFromSuccessResponse(response)
     }
 }
 
-fun DemoSetup.deleteFeaturesReturnSuccess(collectionId: String, vararg features: NakshaFeature): SuccessResponse {
+fun DemoCore.deleteFeatures(collectionId: String, vararg features: DemoFeature): Array<DemoFeature> {
     storage.newWriteSession().use { session ->
         val collection = requireNotNull(session.getCollectionById(catalog, collectionId))
         val request = WriteRequest()
@@ -108,11 +67,11 @@ fun DemoSetup.deleteFeaturesReturnSuccess(collectionId: String, vararg features:
         }
         val response = successResponse(session.execute(request))
         session.commit()
-        return response
+        return featureFromSuccessResponse(response)
     }
 }
 
-fun DemoSetup.readFeaturesByIds(collectionId: String, version: Int64? = null, vararg ids: String): SuccessResponse {
+fun DemoCore.readFeaturesByIds(collectionId: String, version: Int64? = null, vararg ids: String): SuccessResponse {
     storage.newReadSession().use { session ->
         val collection = requireNotNull(session.getCollectionById(catalog, collectionId))
         val request = ReadFeatures()
@@ -122,4 +81,56 @@ fun DemoSetup.readFeaturesByIds(collectionId: String, version: Int64? = null, va
         request.queryMembers = IsAnyOf(StandardMembers.Id,*ids)
         return successResponse(session.execute(request))
     }
+}
+
+fun main() {
+    val demo = DemoCore()
+    // Gather current version.
+    val HEAD: Version = demo.storage.newWriteSession().use { session ->
+        session.useTransaction().version
+    }
+    println("Current head version: '$HEAD', corresponding to day, month, year, seq number: ${HEAD.day}, ${HEAD.month}, ${HEAD.year}, ${HEAD.seq}")
+
+    // Add more random features.
+    val random_features = demo.randomFeatures(5)
+    // Fix geometry for bbox demo.
+    val point = SpPoint(1.0, 1.0)
+    for (feature in random_features) {
+        feature.geometry = point
+    }
+    val features_added = demo.writeFeatures(RANDOM_DATA_COLLECTION_ID, *random_features)
+    val headVersionAfterInsert = Guid.fromString(features_added[0].properties.xyz.uuid!!).tupleNumber.version
+
+    //step 3
+    val update_features = features_added.copyOfRange(0, 3)
+    val newPoint = SpPoint(2.0, 2.0)
+    for (feature in update_features) {
+        feature.properties["demoUpdate"] = "to mark update"
+        feature.geometry = newPoint
+    }
+    val updatedFeatures = demo.updateFeatures(RANDOM_DATA_COLLECTION_ID, *update_features)
+    val headVersionAfterUpdate = Guid.fromString(updatedFeatures[0].properties.xyz.uuid!!).tupleNumber.version
+    //step 4
+    val deletedFeatures = demo.deleteFeatures(RANDOM_DATA_COLLECTION_ID, update_features[0])
+    val tombstoneVersion = Guid.fromString(deletedFeatures[0].properties.xyz.uuid!!).tupleNumber.version
+    //step 5??
+    //step 6
+    val readResponseOriginal =
+        demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID, HEAD.number, random_features[0].id, random_features[1].id)
+    println("Reading features for version before insert, found number of features: ${readResponseOriginal.features.size}")
+    //step 7
+    val readResponseAfterInsert =
+        demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID, headVersionAfterInsert, random_features[0].id, random_features[1].id)
+    println("Reading first 2 features after insert, even though 1st one is deleted in HEAD: ${readResponseAfterInsert.features}")
+    //step 8
+    val readResponseAfterUpdate = demo.readFeaturesByIds(
+        RANDOM_DATA_COLLECTION_ID,
+        headVersionAfterUpdate,
+        random_features[0].id,
+        random_features[1].id,
+        random_features[2].id
+    )
+    println("Reading the 3 updated features, including the 1st one that is deleted in HEAD: ${readResponseAfterUpdate.features}")
+
+    println("\n\n\n\nArguments for demo_03:\n\n$HEAD\n\n")
 }

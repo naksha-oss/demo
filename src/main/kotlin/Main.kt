@@ -204,7 +204,7 @@
 //
 //    // Insert a new feature
 //    val feature = RandomFeatures.randomFeature("o9E6kdUbRLYo")
-//    val properties = feature.properties.proxy(FooBuilder::class)
+//    val properties = feature.properties.proxy(naksha.demo.FooBuilder::class)
 //    properties.name = "Eliot"
 //    properties.age = 0
 //    val tagMap = feature.properties.xyz.tags.toTagMap()

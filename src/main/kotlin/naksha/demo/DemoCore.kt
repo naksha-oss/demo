@@ -2,10 +2,10 @@ package naksha.demo
 
 import naksha.base.Platform
 import naksha.base.PlatformMap
+import naksha.geo.SpFeature
 import naksha.model.IStorage
 import naksha.model.Naksha
 import naksha.model.NakshaContext
-import naksha.model.RandomFeatures
 import naksha.model.objects.NakshaCatalog
 import naksha.model.objects.NakshaFeature
 import naksha.model.objects.NakshaStorage
@@ -18,7 +18,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.system.exitProcess
 
-class DemoSetup {
+class DemoCore {
     companion object DemoSetup_C {
         const val APP_NAME = "demo_app"
         const val APP_ID = "demo_app"
@@ -49,27 +49,38 @@ class DemoSetup {
             this.catalog = catalog
         }
     }
-}
 
-fun successResponse(response: Response): SuccessResponse {
-    if (response is SuccessResponse) return response
-    if (response is ErrorResponse) println(response.error) else println("Unknown response")
-    exitProcess(1)
-}
+    fun successResponse(response: Response): SuccessResponse {
+        if (response is SuccessResponse) return response
+        if (response is ErrorResponse) println(response.error) else println("Unknown response")
+        val e = RuntimeException()
+        e.printStackTrace(System.err)
+        System.out.flush()
+        System.err.flush()
+        exitProcess(1)
+    }
 
-fun loadTextResource(filename: String): String {
-    val classLoader = Thread.currentThread().contextClassLoader
-    val txtPath = classLoader.getResource(filename)
-    requireNotNull(txtPath)
-    val txt = Files.readString(Paths.get(txtPath.toURI()))
-    requireNotNull(txt)
-    return txt
-}
+    fun loadTextResource(filename: String): String {
+        val classLoader = Thread.currentThread().contextClassLoader
+        val txtPath = classLoader.getResource(filename)
+        requireNotNull(txtPath)
+        val txt = Files.readString(Paths.get(txtPath.toURI()))
+        requireNotNull(txt)
+        return txt
+    }
 
-fun loadFeatureFromResource(filename: String): NakshaFeature {
-    val json = loadTextResource(filename)
-    val raw = Platform.fromJSON(json) as PlatformMap
-    val feature = raw.proxy(NakshaFeature::class)
-    return feature
-}
+    fun loadFeatureFromResource(filename: String): NakshaFeature {
+        val json = loadTextResource(filename)
+        val raw = Platform.fromJSON(json) as PlatformMap
+        val feature = raw.proxy(NakshaFeature::class)
+        return feature
+    }
 
+    fun printFeatureId(feature: NakshaFeature) {
+        println("\t{\"id\":\"${feature.id}\", \"uuid\":\"${feature.properties.xyz.uuid}\"}")
+    }
+
+    fun printFeatureId(feature: DemoFeature) {
+        println("\t{\"id\":\"${feature.id}\", \"uuid\":\"${feature.properties.xyz.uuid}\"}")
+    }
+}

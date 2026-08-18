@@ -1,16 +1,18 @@
 package naksha.demo
 
-import naksha.base.Platform
 import naksha.geo.SpFeatureCollection
 import naksha.model.RandomFeatures
 import naksha.model.objects.NakshaCollection
 import naksha.model.objects.NakshaFeature
+import naksha.model.request.ErrorResponse
+import naksha.model.request.SuccessResponse
 import naksha.model.request.Write
 import naksha.model.request.WriteRequest
 
 const val RANDOM_DATA_COLLECTION_ID = "random_data"
 
-fun DemoSetup.createCollections(vararg collections: NakshaCollection): Array<NakshaCollection> {
+
+fun DemoCore.createCollections(vararg collections: NakshaCollection): Array<NakshaCollection> {
     storage.newWriteSession().use { session ->
         val request = WriteRequest()
         val byId = HashMap<String, NakshaCollection>()
@@ -46,37 +48,41 @@ fun DemoSetup.createCollections(vararg collections: NakshaCollection): Array<Nak
     }
 }
 
-fun DemoSetup.writeFeatures(collectionId: String, vararg features: NakshaFeature): Array<NakshaFeature> {
+fun DemoCore.featureFromSuccessResponse(response: SuccessResponse): Array<DemoFeature> {
+    val featureCollection = response.asFeatureCollection()
+    val array = Array(featureCollection.features.size) { i ->
+        featureCollection.features[i]!!.proxy(DemoFeature::class)
+    }
+    return array
+}
+
+
+fun DemoCore.writeFeatures(collectionId: String, vararg features: DemoFeature): Array<DemoFeature> {
     storage.newWriteSession().use { session ->
         val collection = requireNotNull( session.getCollectionById(catalog, collectionId) )
         val request = WriteRequest()
         for (feature in features) {
             request.add(
-                Write().createFeature(collection, feature)
+                Write().createFeature(collection, feature.proxy(NakshaFeature::class))
             )
         }
         val response = successResponse( session.execute(request) )
         session.commit()
-        val featureCollection = response.asFeatureCollection()
-        val array = Array(featureCollection.features.size) { i ->
-            featureCollection.features[i]!!.proxy(NakshaFeature::class)
-        }
-        return array
+        return featureFromSuccessResponse(response)
     }
 }
 
-fun DemoSetup.printFeatureId(feature: NakshaFeature) {
-    println("\t{\"id\":\"${feature.id}\", \"uuid\":\"${feature.properties.xyz.uuid}\"}")
-}
-
-fun DemoSetup.printFeature(feature: NakshaFeature) {
-    println("\t${Platform.toJSON(feature)}")
-}
-
-fun main(vararg args: String) {
-    val demo = DemoSetup()
-    demo.createCollections(NakshaCollection(RANDOM_DATA_COLLECTION_ID))
+fun DemoCore.randomFeatures(amount: Int): Array<DemoFeature> {
     val random_features = Array(10) { RandomFeatures.randomFeature(tagPossibility = 1.0) }
+    return Array(random_features.size) {
+        random_features[it].proxy(DemoFeature::class)
+    }
+}
+
+fun main() {
+    val demo = DemoCore()
+    demo.createCollections(NakshaCollection(RANDOM_DATA_COLLECTION_ID))
+    val random_features = demo.randomFeatures(10)
     val features = demo.writeFeatures(RANDOM_DATA_COLLECTION_ID, *random_features)
     for (feature in features) {
         demo.printFeatureId(feature)
