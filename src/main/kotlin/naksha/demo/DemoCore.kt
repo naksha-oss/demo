@@ -2,11 +2,13 @@ package naksha.demo
 
 import naksha.base.Platform
 import naksha.base.PlatformMap
+import naksha.base.illegalState
 import naksha.geo.SpFeature
 import naksha.model.IStorage
 import naksha.model.Naksha
 import naksha.model.NakshaContext
 import naksha.model.objects.NakshaCatalog
+import naksha.model.objects.NakshaCollection
 import naksha.model.objects.NakshaFeature
 import naksha.model.objects.NakshaStorage
 import naksha.model.request.ErrorResponse
@@ -48,6 +50,10 @@ class DemoCore {
             }
             this.catalog = catalog
         }
+    }
+
+    fun getCollection(id: String): NakshaCollection = storage.newReadSession().use {
+        it.getCollectionById(catalog, id) ?: throw illegalState("Collection $id does not exist")
     }
 
     fun successResponse(response: Response): SuccessResponse {

@@ -56,7 +56,6 @@ fun DemoCore.featureFromSuccessResponse(response: SuccessResponse): Array<DemoFe
     return array
 }
 
-
 fun DemoCore.writeFeatures(collectionId: String, vararg features: DemoFeature): Array<DemoFeature> {
     storage.newWriteSession().use { session ->
         val collection = requireNotNull( session.getCollectionById(catalog, collectionId) )
@@ -78,6 +77,8 @@ fun DemoCore.randomFeatures(amount: Int): Array<DemoFeature> {
         random_features[it].proxy(DemoFeature::class)
     }
 }
+
+fun DemoCore.randomDataCollection() = getCollection(RANDOM_DATA_COLLECTION_ID)
 
 fun main() {
     val demo = DemoCore()

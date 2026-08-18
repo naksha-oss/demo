@@ -2,7 +2,6 @@ package naksha.demo
 
 import naksha.base.Guid
 import naksha.base.NotNullProperty
-import naksha.base.TupleNumber
 import naksha.geo.SpFeature
 
 class DemoFeature : SpFeature() {
@@ -27,5 +26,5 @@ class DemoFeature : SpFeature() {
         private set
 
     override fun toString()
-        = "$id[${properties.state}] - ${properties.firstName} ${properties.lastName}: ${properties.age} @ ${guid?.tupleNumber?.version?:"HEAD"}"
+        = "${guid?.tupleNumber?.action ?: "NEW"} $id - ${properties.firstName} ${properties.lastName}: ${properties.age} @ ${guid?.tupleNumber?.version?:"HEAD"}"
 }

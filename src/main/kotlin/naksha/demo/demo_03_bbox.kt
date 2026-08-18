@@ -4,21 +4,20 @@ import naksha.base.Int64
 import naksha.base.Version
 import naksha.geo.SpBoundingBox
 import naksha.geo.SpGeometry
+import naksha.model.IReadSession
+import naksha.model.objects.NakshaCollection
 import naksha.model.objects.StandardMembers
 import naksha.model.request.ReadFeatures
 import naksha.model.request.ops.Intersects
 
-fun DemoCore.readFeaturesByBBox(collectionId: String, version: Int64? = null, bbox: SpGeometry): Array<DemoFeature> {
-    storage.newReadSession().use { session ->
-        val collection = requireNotNull(session.getCollectionById(catalog, collectionId))
-        val request = ReadFeatures()
-        request.withCatalogId(collection.catalogId).withCollectionId(collection.id)
-        request.version = version
-        request.queryHistory = true
-        request.queryMembers = Intersects(StandardMembers.Geometry, bbox)
-        val response = successResponse(session.execute(request))
-        return featureFromSuccessResponse(response)
-    }
+fun DemoCore.readFeaturesByBBox(session: IReadSession, collection: NakshaCollection, version: Int64? = null, bbox: SpGeometry): Array<DemoFeature> {
+    val request = ReadFeatures()
+    request.withCatalogId(collection.catalogId).withCollectionId(collection.id)
+    request.version = version
+    request.queryHistory = true
+    request.queryMembers = Intersects(StandardMembers.Geometry, bbox)
+    val response = successResponse(session.execute(request))
+    return featureFromSuccessResponse(response)
 }
 
 
@@ -34,7 +33,10 @@ fun main(vararg args: String) {
     // TODO: Read bounding box in random_data in some history version left over from previous test
     val demo = DemoCore()
 
+
     val bbox = SpBoundingBox(0.9, 0.9, 1.1, 1.1).addMargin(0.0000001).toPolygon()
-    val features = demo.readFeaturesByBBox(RANDOM_DATA_COLLECTION_ID, HEAD_VERSION.number, bbox)
+    val features = demo.storage.newReadSession().use {
+        demo.readFeaturesByBBox(it,demo.randomDataCollection(), HEAD_VERSION.number, bbox)
+    }
     for (feature in features) demo.printFeatureId(feature)
 }
