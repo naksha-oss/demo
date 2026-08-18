@@ -16,12 +16,18 @@ SET enable_seqscan TO off;
 select id, fn, naksha_feature(feature) as feature, feature as binary from random_data
 
 
-
-
 -- demo_02
-union all
-select id, fn from delta_layer;
+select id, fn, version, naksha_feature(feature) as feature, feature as binary from random_data;
+select id, fn, version, naksha_feature(feature) as feature, feature as binary from "random_data$hst";
 
+
+-- demo_04
+select id, fn, naksha_feature(feature) as feature, feature as binary from delta;
+
+
+select 'delta' as layer, id, fn, version, naksha_feature(feature) as feature, feature as binary from delta
+union all
+select 'base' as layer, id, fn, version, naksha_feature(feature) as feature, feature as binary from random_data;
 
 
 

@@ -4,6 +4,7 @@ import com.here.naksha.lib.view.View
 import com.here.naksha.lib.view.ViewLayer
 import com.here.naksha.lib.view.ViewLayerCollection
 import naksha.base.Version
+import naksha.geo.SpBoundingBox
 import naksha.model.objects.NakshaCollection
 
 fun main(vararg args: String) {
@@ -25,13 +26,14 @@ fun main(vararg args: String) {
 
     // STANDARD VIEW
     val demo = DemoCore()
-    val delta_collection = demo.createCollections(NakshaCollection("delta"))
-    val storage = demo.storage
-    val base = ViewLayer(storage, demo.catalog.id, RANDOM_DATA_COLLECTION_ID)
-    val delta = ViewLayer(storage, demo.catalog.id, "delta_layer")
+    demo.createCollections(NakshaCollection("delta"))
+    val base = ViewLayer(demo.storage, demo.catalog.id, RANDOM_DATA_COLLECTION_ID, HEAD_VERSION)
+    val delta = ViewLayer(demo.storage, demo.catalog.id, "delta")
     val view = View(ViewLayerCollection("my_view", delta, base))
     view.newReadSession().use { session ->
-        // Unmodified
+        val bbox = SpBoundingBox(0.9, 0.9, 1.1, 1.1).addMargin(0.0000001).toPolygon()
+        val features = demo.readFeaturesByBBox(RANDOM_DATA_COLLECTION_ID, HEAD_VERSION.number, bbox)
+        for (feature in features) demo.printFeatureId(feature)
     }
 
     // ADDITIONALLY: Is view with fixed base, so base fixed to a specific version!

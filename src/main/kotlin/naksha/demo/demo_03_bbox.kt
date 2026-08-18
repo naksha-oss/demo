@@ -6,10 +6,9 @@ import naksha.geo.SpBoundingBox
 import naksha.geo.SpGeometry
 import naksha.model.objects.StandardMembers
 import naksha.model.request.ReadFeatures
-import naksha.model.request.SuccessResponse
 import naksha.model.request.ops.Intersects
 
-fun DemoCore.readFeaturesByBBox(collectionId: String, version: Int64? = null, bbox: SpGeometry): SuccessResponse {
+fun DemoCore.readFeaturesByBBox(collectionId: String, version: Int64? = null, bbox: SpGeometry): Array<DemoFeature> {
     storage.newReadSession().use { session ->
         val collection = requireNotNull(session.getCollectionById(catalog, collectionId))
         val request = ReadFeatures()
@@ -17,7 +16,8 @@ fun DemoCore.readFeaturesByBBox(collectionId: String, version: Int64? = null, bb
         request.version = version
         request.queryHistory = true
         request.queryMembers = Intersects(StandardMembers.Geometry, bbox)
-        return successResponse(session.execute(request))
+        val response = successResponse(session.execute(request))
+        return featureFromSuccessResponse(response)
     }
 }
 
@@ -35,6 +35,6 @@ fun main(vararg args: String) {
     val demo = DemoCore()
 
     val bbox = SpBoundingBox(0.9, 0.9, 1.1, 1.1).addMargin(0.0000001).toPolygon()
-    val response = demo.readFeaturesByBBox(RANDOM_DATA_COLLECTION_ID, HEAD_VERSION.number, bbox)
-    println(response)
+    val features = demo.readFeaturesByBBox(RANDOM_DATA_COLLECTION_ID, HEAD_VERSION.number, bbox)
+    for (feature in features) demo.printFeatureId(feature)
 }
