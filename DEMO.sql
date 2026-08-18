@@ -30,19 +30,31 @@ select naksha_version_action_text(version) as "action", id, fn, version, naksha_
 
 -- demo_03
 select naksha_version_action_text(version) as "action", id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from random_data
-  WHERE version <= 4456397936787638
+  WHERE ST_Intersects(naksha_2d(geo), ST_MakeEnvelope(0.5, 0.5, 2.5, 2.5, 4326))
+union all
+select naksha_version_action_text(version) as "action", id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from "random_data$hst"
+  WHERE ST_Intersects(naksha_2d(geo), ST_MakeEnvelope(0.5, 0.5, 2.5, 2.5, 4326))
+
+
+select naksha_version_action_text(version) as "action", id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from random_data
+  WHERE version <= 4456397936787635
   AND ST_Intersects(naksha_2d(geo), ST_MakeEnvelope(0.5, 0.5, 2.5, 2.5, 4326))
 union all
 select naksha_version_action_text(version) as "action", id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from "random_data$hst"
-  WHERE version <= 4456397936787638 AND nv > 4456397936787638
+  WHERE version <= 4456397936787635 AND nv > 4456397936787635
   AND ST_Intersects(naksha_2d(geo), ST_MakeEnvelope(0.5, 0.5, 2.5, 2.5, 4326))
 
 
   
   
 -- demo_04
-select naksha_version_action_text(version) as "action", id, fn, version, naksha_feature(feature) as feature, feature as binary from random_data;
-select naksha_version_action_text(version) as "action", id, fn, version, naksha_feature(feature) as feature, feature as binary from "random_data$hst";
+select naksha_version_action_text(version) as "action", id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from random_data
+  WHERE version <= 4456397936787635
+  AND ST_Intersects(naksha_2d(geo), ST_MakeEnvelope(0.5, 0.5, 2.5, 2.5, 4326))
+union all
+select naksha_version_action_text(version) as "action", id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from "random_data$hst"
+  WHERE version <= 4456397936787635 AND nv > 4456397936787635
+  AND ST_Intersects(naksha_2d(geo), ST_MakeEnvelope(0.5, 0.5, 2.5, 2.5, 4326))
 
 
 

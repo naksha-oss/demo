@@ -26,5 +26,5 @@ class DemoFeature : SpFeature() {
         private set
 
     override fun toString()
-        = "${guid?.tupleNumber?.action ?: "NEW"} $id - ${properties.firstName} ${properties.lastName}: ${properties.age} @ ${guid?.tupleNumber?.version?:"HEAD"}"
+        = "${guid?.tupleNumber?.action ?: "NEW"} $id - ${properties.firstName} ${properties.lastName}: ${properties.age}, geo=(${geometry.asPoint().latitude}, ${geometry.asPoint().longitude}), v=${guid?.tupleNumber?.version?:"HEAD"}"
 }
