@@ -3,9 +3,15 @@ package naksha.demo
 import com.here.naksha.lib.view.View
 import com.here.naksha.lib.view.ViewLayer
 import com.here.naksha.lib.view.ViewLayerCollection
+import naksha.base.Version
 import naksha.model.objects.NakshaCollection
 
 fun main(vararg args: String) {
+    val HEAD_VERSION = Version.fromString(args[0])
+    val ADDED_VERSION = Version.fromString(args[1])
+    val UPDATED_VERSION = Version.fromString(args[2])
+    val DELETED_VERSION = Version.fromString(args[3])
+
     // create a new delta collection on top of the random data
     // create a view above the random data and the new delta layer
     // query the view to show data modification
@@ -19,7 +25,7 @@ fun main(vararg args: String) {
 
     // STANDARD VIEW
     val demo = DemoCore()
-    demo.createCollections(NakshaCollection("delta_layer"))
+    val delta_collection = demo.createCollections(NakshaCollection("delta"))
     val storage = demo.storage
     val base = ViewLayer(storage, demo.catalog.id, RANDOM_DATA_COLLECTION_ID)
     val delta = ViewLayer(storage, demo.catalog.id, "delta_layer")

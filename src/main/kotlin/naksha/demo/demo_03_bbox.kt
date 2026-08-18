@@ -25,13 +25,16 @@ fun DemoCore.readFeaturesByBBox(collectionId: String, version: Int64? = null, bb
 
 // Requires:
 fun main(vararg args: String) {
-    val HEAD = Version.fromString(args[0])
+    val HEAD_VERSION = Version.fromString(args[0])
+    val ADDED_VERSION = Version.fromString(args[1])
+    val UPDATED_VERSION = Version.fromString(args[2])
+    val DELETED_VERSION = Version.fromString(args[3])
 
     // TODO: Read bounding box in random_data HEAD version
     // TODO: Read bounding box in random_data in some history version left over from previous test
     val demo = DemoCore()
 
     val bbox = SpBoundingBox(0.9, 0.9, 1.1, 1.1).addMargin(0.0000001).toPolygon()
-    val response = demo.readFeaturesByBBox(RANDOM_DATA_COLLECTION_ID, HEAD.number, bbox)
+    val response = demo.readFeaturesByBBox(RANDOM_DATA_COLLECTION_ID, HEAD_VERSION.number, bbox)
     println(response)
 }

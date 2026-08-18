@@ -86,10 +86,10 @@ fun DemoCore.readFeaturesByIds(collectionId: String, version: Int64? = null, var
 fun main() {
     val demo = DemoCore()
     // Gather current version.
-    val HEAD: Version = demo.storage.newWriteSession().use { session ->
+    val HEAD_VERSION: Version = demo.storage.newWriteSession().use { session ->
         session.useTransaction().version
     }
-    println("Current head version: '$HEAD', corresponding to day, month, year, seq number: ${HEAD.day}, ${HEAD.month}, ${HEAD.year}, ${HEAD.seq}")
+    println("Current head version: '$HEAD_VERSION', corresponding to day, month, year, seq number: ${HEAD_VERSION.day}, ${HEAD_VERSION.month}, ${HEAD_VERSION.year}, ${HEAD_VERSION.seq}")
 
     // Add more random features.
     val random_features = demo.randomFeatures(5)
@@ -99,7 +99,7 @@ fun main() {
         feature.geometry = point
     }
     val features_added = demo.writeFeatures(RANDOM_DATA_COLLECTION_ID, *random_features)
-    val headVersionAfterInsert = Guid.fromString(features_added[0].properties.xyz.uuid!!).tupleNumber.version
+    val ADDED_VERSION = Guid.fromString(features_added[0].properties.xyz.uuid!!).tupleNumber.version
 
     //step 3
     val update_features = features_added.copyOfRange(0, 3)
@@ -109,28 +109,28 @@ fun main() {
         feature.geometry = newPoint
     }
     val updatedFeatures = demo.updateFeatures(RANDOM_DATA_COLLECTION_ID, *update_features)
-    val headVersionAfterUpdate = Guid.fromString(updatedFeatures[0].properties.xyz.uuid!!).tupleNumber.version
+    val UPDATED_VERSION = Guid.fromString(updatedFeatures[0].properties.xyz.uuid!!).tupleNumber.version
     //step 4
     val deletedFeatures = demo.deleteFeatures(RANDOM_DATA_COLLECTION_ID, update_features[0])
-    val tombstoneVersion = Guid.fromString(deletedFeatures[0].properties.xyz.uuid!!).tupleNumber.version
+    val DELETED_VERSION = Guid.fromString(deletedFeatures[0].properties.xyz.uuid!!).tupleNumber.version
     //step 5??
     //step 6
     val readResponseOriginal =
-        demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID, HEAD.number, random_features[0].id, random_features[1].id)
+        demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID, HEAD_VERSION.number, random_features[0].id, random_features[1].id)
     println("Reading features for version before insert, found number of features: ${readResponseOriginal.features.size}")
     //step 7
     val readResponseAfterInsert =
-        demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID, headVersionAfterInsert, random_features[0].id, random_features[1].id)
+        demo.readFeaturesByIds(RANDOM_DATA_COLLECTION_ID, ADDED_VERSION, random_features[0].id, random_features[1].id)
     println("Reading first 2 features after insert, even though 1st one is deleted in HEAD: ${readResponseAfterInsert.features}")
     //step 8
     val readResponseAfterUpdate = demo.readFeaturesByIds(
         RANDOM_DATA_COLLECTION_ID,
-        headVersionAfterUpdate,
+        UPDATED_VERSION,
         random_features[0].id,
         random_features[1].id,
         random_features[2].id
     )
     println("Reading the 3 updated features, including the 1st one that is deleted in HEAD: ${readResponseAfterUpdate.features}")
 
-    println("\n\n\n\nArguments for demo_03:\n\n$HEAD\n\n")
+    println("\n\nArguments for demo_03:\n$HEAD_VERSION $ADDED_VERSION $UPDATED_VERSION $DELETED_VERSION\n")
 }
