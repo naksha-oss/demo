@@ -58,8 +58,6 @@ select naksha_version_action_text(version) as "action", id, fn, version, naksha_
 
 
 
-
--- demo_04
 select id, fn, naksha_feature(feature) as feature, feature as binary from delta;
 
 

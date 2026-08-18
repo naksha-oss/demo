@@ -85,7 +85,8 @@ fun main() {
     demo.createCollections(NakshaCollection(RANDOM_DATA_COLLECTION_ID))
     val random_features = demo.randomFeatures(10)
     val features = demo.writeFeatures(RANDOM_DATA_COLLECTION_ID, *random_features)
-    for (feature in features) demo.printFeatureId(feature)
+    println("----------< CREATED")
+    for (feature in features) println(feature)
     val HEAD = (features[0].guid!!.tupleNumber.version.toLong() and -4L) or 3
     println("\nHEAD: $HEAD\n")
 }
