@@ -13,10 +13,26 @@ SET enable_seqscan TO off;
 
 
 -- demo_01
-select id, fn, naksha_feature(feature) as feature, feature as binary from random_data
+select id, fn, version, naksha_2d(geo) as geo, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from random_data;
+select id, fn, version, naksha_2d(geo) as geo, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from "random_data$hst";
 
 
 -- demo_02
+select id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from random_data;
+select id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from "random_data$hst";
+
+
+-- demo_03
+select id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from random_data
+  WHERE version <= 4456397936787628
+  AND ST_Intersects(naksha_2d(geo), ST_MakeEnvelope(0.5, 0.5, 2.5, 2.5, 4326))
+union all
+select id, fn, version, naksha_2d(geo) as geo, naksha_feature(feature) as feature, feature as binary from "random_data$hst"
+  WHERE version <= 4456397936787628 AND nv > 4456397936787628
+  AND ST_Intersects(naksha_2d(geo), ST_MakeEnvelope(0.5, 0.5, 2.5, 2.5, 4326))
+
+
+-- demo_04
 select id, fn, version, naksha_feature(feature) as feature, feature as binary from random_data;
 select id, fn, version, naksha_feature(feature) as feature, feature as binary from "random_data$hst";
 

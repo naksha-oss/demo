@@ -27,5 +27,5 @@ class DemoFeature : SpFeature() {
         private set
 
     override fun toString()
-        = "$id - ${properties.firstName} ${properties.lastName}: ${properties.age} @ ${guid?.tupleNumber?.version?:"HEAD"}"
+        = "$id[${properties.state}] - ${properties.firstName} ${properties.lastName}: ${properties.age} @ ${guid?.tupleNumber?.version?:"HEAD"}"
 }

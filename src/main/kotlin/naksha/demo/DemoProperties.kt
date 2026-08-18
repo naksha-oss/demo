@@ -16,4 +16,5 @@ class DemoProperties : NakshaProperties() {
     var firstName: String by STRING
     var middleName: String? by STRING_OR_NULL
     var lastName: String by STRING
+    var state: String? by STRING_OR_NULL
 }
