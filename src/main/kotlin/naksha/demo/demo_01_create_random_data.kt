@@ -72,7 +72,7 @@ fun DemoCore.writeFeatures(collectionId: String, vararg features: DemoFeature): 
 }
 
 fun DemoCore.randomFeatures(amount: Int): Array<DemoFeature> {
-    val random_features = Array(10) { RandomFeatures.randomFeature(tagPossibility = 1.0) }
+    val random_features = Array(amount) { RandomFeatures.randomFeature(tagPossibility = 1.0) }
     return Array(random_features.size) {
         random_features[it].proxy(DemoFeature::class)
     }
